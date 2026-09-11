@@ -7,14 +7,28 @@ import customerRoutes from "./routes/customerRoutes.js";
 dotenv.config();
 
 const app = express();
+
+// Enable JSON body parsing
 app.use(express.json());
 
-// Root route - API info
+// CORS & Preflight middleware
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+// Root route - API info & health check
 app.get("/", (req, res) => {
   res.json({
     name: "Sales API - PPB Kelompok 23",
     version: "1.0.0",
     status: "running",
+    supabase_configured: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_KEY),
     endpoints: {
       categories: "/api/categories",
       products: "/api/products",
@@ -31,11 +45,33 @@ app.get("/", (req, res) => {
   });
 });
 
+// API Routes
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/customers", customerRoutes);
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+// 404 handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({
+    error: `Route ${req.method} ${req.originalUrl} not found`,
+  });
 });
+
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({
+    error: err.message || "Internal Server Error",
+  });
+});
+
+// For local development
+const port = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+// Export for Vercel Serverless
+export default app;

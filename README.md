@@ -17,13 +17,20 @@ REST API untuk manajemen data penjualan (produk, kategori, pelanggan) dibangun d
 
 ## ⚙️ Environment Variables
 
-Buat file `.env` di root project dengan isi berikut:
+Buat file `.env` di root project (atau salin dari `.env.example`):
 
 ```env
 SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-SUPABASE_KEY=your_supabase_anon_key
+# Catatan penting terkait RLS (Row Level Security):
+# Jika RLS di Supabase aktif, gunakan service_role secret key untuk backend API agar query tidak terblokir:
+SUPABASE_KEY=your_supabase_service_role_key_or_anon_key
 PORT=3000
 ```
+
+> **Catatan Penting RLS Supabase:**
+> 1. **Rekomendasi Utama**: Gunakan `service_role secret` dari Supabase (*Project Settings > API > service_role (secret)*) pada environment variable backend (`SUPABASE_KEY`) baik lokal maupun di Vercel Dashboard. Kunci ini aman untuk server backend dan otomatis bypass RLS.
+> 2. **Opsi Alternatif**: Jika tetap menggunakan `anon key`, pastikan Anda sudah menambahkan RLS Policy (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) di Supabase SQL Editor untuk tabel `categories`, `products`, dan `customers`.
+
 
 ---
 

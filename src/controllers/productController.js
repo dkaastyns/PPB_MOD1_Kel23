@@ -66,9 +66,12 @@ export const ProductController = {
   async getById(req, res) {
     try {
       const product = await ProductModel.getById(req.params.id);
+      if (!product) {
+        return res.status(404).json({ error: `Product with ID ${req.params.id} not found` });
+      }
       res.json(product);
     } catch (err) {
-      res.status(404).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
   },
 
@@ -84,6 +87,9 @@ export const ProductController = {
   async update(req, res) {
     try {
       const product = await ProductModel.update(req.params.id, req.body);
+      if (!product) {
+        return res.status(404).json({ error: `Product with ID ${req.params.id} not found or no changes made` });
+      }
       res.json(product);
     } catch (err) {
       res.status(400).json({ error: err.message });

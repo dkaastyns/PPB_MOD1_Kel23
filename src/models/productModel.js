@@ -41,12 +41,12 @@ export const ProductModel = {
       .from("products")
       .select(
         `
-        id, sku, name, description, price, stock,
+        id, sku, name, description, price, stock, category_id,
         categories ( id, name )
         `
       )
       .eq("id", id)
-      .single();
+      .maybeSingle();
     if (error) throw error;
     return data;
   },
@@ -55,9 +55,10 @@ export const ProductModel = {
     const { data, error } = await supabase
       .from("products")
       .insert([payload])
-      .select();
+      .select()
+      .maybeSingle();
     if (error) throw error;
-    return data[0];
+    return data;
   },
 
   async update(id, payload) {
@@ -65,9 +66,10 @@ export const ProductModel = {
       .from("products")
       .update(payload)
       .eq("id", id)
-      .select();
+      .select()
+      .maybeSingle();
     if (error) throw error;
-    return data[0];
+    return data;
   },
 
   async remove(id) {
